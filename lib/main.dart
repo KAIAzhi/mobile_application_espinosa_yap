@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-<<<<<<< HEAD
-import 'login.dart';
-=======
 import 'pages/login.dart';
->>>>>>> 5e837eb (Initial commit)
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
