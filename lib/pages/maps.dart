@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'reports.dart';
-import 'profile.dart';
+
+import '../theme/app_theme.dart';
 import 'home.dart';
+import 'profile.dart';
+import 'reports.dart';
 
 class HazardDetailsPage extends StatefulWidget {
   const HazardDetailsPage({super.key});
@@ -13,7 +15,7 @@ class HazardDetailsPage extends StatefulWidget {
 }
 
 class _HazardDetailsPageState extends State<HazardDetailsPage> {
-  final int _selectedIndex = 3;
+  final int _selectedIndex = 2;
 
   final LatLng hazardLocation = const LatLng(10.3157, 123.8854); // Example Cebu City coordinates
 
@@ -32,13 +34,13 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
         );
         break;
       case 2:
+        // Maps tab - already here
+        break;
+      case 3:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const ProfilePage()),
         );
-        break;
-      case 3:
-        // Maps tab - already here
         break;
     }
   }
@@ -50,26 +52,42 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF4F6FA),
+      backgroundColor: AppTheme.surfaceLight,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceLight,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           "Hazard Details",
           style: GoogleFonts.outfit(
-            color: Colors.black,
+            color: Colors.black87,
             fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.share, color: Colors.black),
-          )
+        actions: [
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.share_rounded, size: 20, color: AppTheme.primaryBlue),
+            ),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
         ],
       ),
 
@@ -95,21 +113,30 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
                   },
                 ),
                 Positioned(
-                  bottom: 10,
+                  bottom: 12,
                   left: 16,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6),
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.blue,
+                      color: AppTheme.primaryBlue,
                       borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Text(
                       "UNDER INVESTIGATION",
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -136,14 +163,19 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on,
-                      color: Colors.red,
-                      size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    "Corner of Rizal and Mabini St.",
-                    style: GoogleFonts.outfit(
-                      color: Colors.grey[700],
+                  Icon(
+                    Icons.location_on_rounded,
+                    color: AppTheme.dangerRed,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      "Corner of Rizal and Mabini St.",
+                      style: GoogleFonts.outfit(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -210,10 +242,17 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppTheme.cardWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Text(
                   "Strong winds from the recent thunderstorm caused an electric pole to lean significantly. Several wires are hanging low across the intersection, obstructing traffic and posing a severe shock hazard to pedestrians.",
@@ -231,8 +270,17 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const CircleAvatar(
-                    child: Text("JD"),
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppTheme.primaryBlue,
+                    child: Text(
+                      "JD",
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Column(
@@ -253,17 +301,34 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
                     ],
                   ),
                   const Spacer(),
-                  Row(
-                    children: [
-                      const Icon(Icons.verified,
-                          color: Colors.blue,
-                          size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        "Verified User",
-                        style: GoogleFonts.outfit(),
-                      )
-                    ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.successGreen.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          color: AppTheme.successGreen,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "Verified User",
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.successGreen,
+                          ),
+                        ),
+                      ],
+                    ),
                   )
                 ],
               ),
@@ -277,29 +342,37 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[200],
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.all(14),
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryBlue,
+                        side: const BorderSide(color: AppTheme.primaryBlue),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      icon: const Icon(Icons.notifications),
+                      icon: const Icon(Icons.notifications_outlined, size: 20),
                       label: const Text("Get Updates"),
                       onPressed: () {},
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.all(14),
+                        backgroundColor: AppTheme.dangerRed,
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      icon: const Icon(Icons.warning),
+                      icon: const Icon(Icons.emergency_rounded, size: 20),
                       label: const Text("Request Help"),
                       onPressed: () {},
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -310,34 +383,58 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
       ),
 
       /// BOTTOM NAVIGATION BAR
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF1976D2), // Blue color for selected items
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assessment),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Maps',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardWhite,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onNavTapped,
+          backgroundColor: Colors.transparent,
+          selectedItemColor: AppTheme.primaryBlue,
+          unselectedItemColor: Colors.grey.shade500,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(
+                _selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+              ),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                _selectedIndex == 1
+                    ? Icons.assessment_rounded
+                    : Icons.assessment_outlined,
+              ),
+              label: 'Reports',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                _selectedIndex == 2 ? Icons.map_rounded : Icons.map_outlined,
+              ),
+              label: 'Maps',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                _selectedIndex == 3
+                    ? Icons.person_rounded
+                    : Icons.person_outline_rounded,
+              ),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

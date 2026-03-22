@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../theme/app_theme.dart';
 import 'home.dart';
-import 'reports.dart';
 import 'maps.dart';
+import 'reports.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,7 +14,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  int _selectedIndex = 2;
+  int _selectedIndex = 3;
 
   void _onNavBarTapped(int index) {
     setState(() {
@@ -34,14 +37,14 @@ class _ProfilePageState extends State<ProfilePage> {
         );
         break;
       case 2:
-        // Profile tab - already here
-        break;
-      case 3:
         // Maps tab
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
         );
+        break;
+      case 3:
+        // Profile tab - already here
         break;
     }
   }
@@ -51,35 +54,59 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: const Color(0xffF5F5F5),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: _onNavBarTapped,
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF1976D2), // Blue color for selected items
-          unselectedItemColor: Colors.grey,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          elevation: 8,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.assessment),
-              label: 'Reports',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Maps',
-            ),
-          ],
+        backgroundColor: AppTheme.surfaceLight,
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: AppTheme.cardWhite,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onNavBarTapped,
+            backgroundColor: Colors.transparent,
+            selectedItemColor: AppTheme.primaryBlue,
+            unselectedItemColor: Colors.grey.shade500,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            elevation: 0,
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(
+                  _selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+                ),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  _selectedIndex == 1
+                      ? Icons.assessment_rounded
+                      : Icons.assessment_outlined,
+                ),
+                label: 'Reports',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  _selectedIndex == 2 ? Icons.map_rounded : Icons.map_outlined,
+                ),
+                label: 'Maps',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  _selectedIndex == 3
+                      ? Icons.person_rounded
+                      : Icons.person_outline_rounded,
+                ),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -89,18 +116,39 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 /// HEADER
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text(
                         "Profile",
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Icon(Icons.settings)
+                      GestureDetector(
+                        onTap: () {},
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.cardWhite,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.settings_rounded,
+                            color: AppTheme.primaryBlue,
+                            size: 22,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -109,56 +157,88 @@ class _ProfilePageState extends State<ProfilePage> {
                 Center(
                   child: Column(
                     children: [
-
                       Stack(
                         children: [
-
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.blue,
-                            child: const Text(
-                              "JD",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppTheme.primaryBlue,
+                                  AppTheme.primaryBlueDark,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primaryBlue.withOpacity(0.3),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 40,
+                              backgroundColor: AppTheme.primaryBlue,
+                              child: Text(
+                                "JD",
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-
                           Positioned(
                             bottom: 0,
                             right: 0,
-                            child: CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Colors.red,
-                              child: const Icon(
-                                Icons.edit,
-                                size: 14,
-                                color: Colors.white,
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryBlue,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppTheme.surfaceLight,
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.edit_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
-
-                      const SizedBox(height: 10),
-
-                      const Text(
+                      const SizedBox(height: 16),
+                      Text(
                         "Juan Dela Cruz",
-                        style: TextStyle(
-                          fontSize: 20,
+                        style: GoogleFonts.outfit(
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-
                       const SizedBox(height: 4),
-
-                      const Text(
+                      Text(
                         "Community Responder • Zone 2",
-                        style: TextStyle(color: Colors.grey),
+                        style: GoogleFonts.outfit(
+                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                        ),
                       ),
-
                     ],
                   ),
                 ),
@@ -167,18 +247,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 /// REPORT CARDS
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-
                       Expanded(
-                        child: statCard("12", "TOTAL REPORTS", Colors.blue),
+                        child: statCard("12", "TOTAL REPORTS", AppTheme.primaryBlue),
                       ),
-
-                      const SizedBox(width: 12),
-
+                      const SizedBox(width: 14),
                       Expanded(
-                        child: statCard("9", "VERIFIED", Colors.green),
+                        child: statCard("9", "VERIFIED", AppTheme.successGreen),
                       ),
                     ],
                   ),
@@ -190,15 +267,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 sectionTitle("PERSONAL INFORMATION"),
 
                 infoTile(
-                    Icons.email_outlined,
-                    "Email Address",
-                    "juan.delacruz@email.com"
+                  Icons.email_outlined,
+                  "Email Address",
+                  "juan.delacruz@email.com",
                 ),
+                const SizedBox(height: 10),
 
                 infoTile(
-                    Icons.phone_android,
-                    "Mobile Number",
-                    "+63 912 345 6789"
+                  Icons.phone_android,
+                  "Mobile Number",
+                  "+63 912 345 6789",
                 ),
 
                 const SizedBox(height: 20),
@@ -206,35 +284,41 @@ class _ProfilePageState extends State<ProfilePage> {
                 /// SETTINGS
                 sectionTitle("APP SETTINGS"),
 
-                switchTile("Dark Mode", Icons.dark_mode),
-
-                switchTile("Push Notifications", Icons.notifications),
-
-                listTile("Account Security", Icons.security),
+                switchTile("Dark Mode", Icons.dark_mode_rounded),
+                const SizedBox(height: 10),
+                switchTile("Push Notifications", Icons.notifications_rounded),
+                const SizedBox(height: 10),
+                listTile("Account Security", Icons.security_rounded),
 
                 const SizedBox(height: 20),
 
                 /// SIGN OUT
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.red,
-                      minimumSize: const Size(double.infinity, 50),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.dangerRed,
+                      side: const BorderSide(color: AppTheme.dangerRed),
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     onPressed: () {},
-                    icon: const Icon(Icons.logout),
+                    icon: const Icon(Icons.logout_rounded, size: 22),
                     label: const Text("Sign Out"),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                const Center(
+                Center(
                   child: Text(
                     "RescueHub v2.4.1 (Stable Build)",
-                    style: TextStyle(color: Colors.grey),
+                    style: GoogleFonts.outfit(
+                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
 
@@ -250,29 +334,37 @@ class _ProfilePageState extends State<ProfilePage> {
   /// STAT CARD
   Widget statCard(String number, String label, Color color) {
     return Container(
-      height: 80,
+      height: 90,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
           Text(
             number,
-            style: TextStyle(
-              fontSize: 24,
+            style: GoogleFonts.outfit(
+              fontSize: 28,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
-
+          const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
+            style: GoogleFonts.outfit(
+              fontSize: 11,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -283,13 +375,14 @@ class _ProfilePageState extends State<ProfilePage> {
   /// SECTION TITLE
   Widget sectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: GoogleFonts.outfit(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.grey,
+          color: Colors.grey.shade600,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -297,30 +390,112 @@ class _ProfilePageState extends State<ProfilePage> {
 
   /// INFO TILE
   Widget infoTile(IconData icon, String title, String subtitle) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryBlue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppTheme.primaryBlue, size: 22),
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.outfit(fontWeight: FontWeight.w500),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: GoogleFonts.outfit(
+            color: Colors.grey.shade600,
+            fontSize: 13,
+          ),
+        ),
+        trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+      ),
     );
   }
 
   /// SWITCH TILE
   Widget switchTile(String title, IconData icon) {
-    return SwitchListTile(
-      value: false,
-      onChanged: (val) {},
-      secondary: Icon(icon),
-      title: Text(title),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SwitchListTile(
+        value: false,
+        onChanged: (val) {},
+        secondary: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryBlue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppTheme.primaryBlue, size: 22),
+        ),
+        title: Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.w500)),
+        activeTrackColor: AppTheme.primaryBlue,
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return Colors.grey;
+        }),
+      ),
     );
   }
 
   /// NORMAL TILE
   Widget listTile(String title, IconData icon) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      trailing: const Icon(Icons.chevron_right),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryBlue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppTheme.primaryBlue, size: 22),
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.outfit(fontWeight: FontWeight.w500),
+        ),
+        trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+      ),
     );
   }
 }

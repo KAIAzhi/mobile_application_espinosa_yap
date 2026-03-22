@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../theme/app_theme.dart';
 import 'home.dart';
 
 class LoginnWidget extends StatefulWidget {
@@ -36,8 +38,19 @@ class _LoginnWidgetState extends State<LoginnWidget> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: theme.colorScheme.error,
+              gradient: const LinearGradient(
+                colors: [AppTheme.primaryBlue, AppTheme.primaryBlueDark],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryBlue.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: const Icon(
               Icons.medical_services,
@@ -133,10 +146,14 @@ class _LoginnWidgetState extends State<LoginnWidget> {
           // Forgot Password
           Align(
             alignment: Alignment.centerRight,
-            child: Text(
-              'Forgot Password?',
-              style: TextStyle(
-                color: theme.colorScheme.error,
+            child: GestureDetector(
+              onTap: () {},
+              child: Text(
+                'Forgot Password?',
+                style: GoogleFonts.outfit(
+                  color: AppTheme.primaryBlue,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -153,15 +170,17 @@ class _LoginnWidgetState extends State<LoginnWidget> {
                   MaterialPageRoute(builder: (context) => const HomeWidget()),
                 );
               },
-              icon: const Icon(Icons.login),
+              icon: const Icon(Icons.login, size: 22),
               label: const Text('Login'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.error,
+                backgroundColor: AppTheme.primaryBlue,
                 foregroundColor: Colors.white,
+                elevation: 3,
+                shadowColor: AppTheme.primaryBlue.withOpacity(0.4),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                textStyle: GoogleFonts.interTight(
+                textStyle: GoogleFonts.outfit(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -190,11 +209,14 @@ class _LoginnWidgetState extends State<LoginnWidget> {
                 ),
               ),
               const SizedBox(width: 4),
-              Text(
-                'Register',
-                style: TextStyle(
-                  color: theme.colorScheme.error,
-                  fontWeight: FontWeight.w600,
+              GestureDetector(
+                onTap: () {},
+                child: Text(
+                  'Register',
+                  style: GoogleFonts.outfit(
+                    color: AppTheme.primaryBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],

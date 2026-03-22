@@ -1,9 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../theme/app_theme.dart';
 import 'home.dart';
-import 'profile.dart';
 import 'maps.dart';
+import 'profile.dart';
 
 class ReportsWidget extends StatefulWidget {
   const ReportsWidget({super.key});
@@ -33,17 +34,17 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         // Reports tab - already here
         break;
       case 2:
-        // Profile tab
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
-        );
-        break;
-      case 3:
         // Maps tab
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
+        );
+        break;
+      case 3:
+        // Profile tab
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
         );
         break;
     }
@@ -57,42 +58,12 @@ class _ReportsWidgetState extends State<ReportsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavBarTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF1976D2), // Blue color for selected items
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assessment),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Maps',
-          ),
-        ],
-      ),
+      backgroundColor: AppTheme.surfaceLight,
+      bottomNavigationBar: _buildBottomNav(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -100,46 +71,87 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.warning_amber_rounded,
+                      color: AppTheme.primaryBlue,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Text(
                     'Report a Hazard',
-                    style: GoogleFonts.interTight(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
+                    style: GoogleFonts.outfit(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
               // Hazard Evidence
               Text(
                 'HAZARD EVIDENCE',
-                style: theme.textTheme.labelSmall?.copyWith(
+                style: GoogleFonts.outfit(
                   fontWeight: FontWeight.w600,
-                  color: theme.hintColor,
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 8),
-              Container(
-                height: 200,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: theme.dividerColor,
-                    width: 2,
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppTheme.primaryBlue.withOpacity(0.3),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ),
-                child: const Center(
-                  child: Icon(Icons.camera_alt_outlined, size: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_a_photo_rounded,
+                        size: 48,
+                        color: AppTheme.primaryBlue.withOpacity(0.6),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tap to add photo',
+                        style: GoogleFonts.outfit(
+                          color: AppTheme.primaryBlue,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Required for validation',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.hintColor,
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
                 ),
               ),
               const SizedBox(height: 24),
@@ -147,30 +159,48 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               // Hazard Type
               Text(
                 'TYPE OF HAZARD',
-                style: theme.textTheme.labelSmall?.copyWith(
+                style: GoogleFonts.outfit(
                   fontWeight: FontWeight.w600,
-                  color: theme.hintColor,
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 8),
-              Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: theme.dividerColor),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Select category...',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.hintColor,
-                      ),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  height: 54,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.grey.shade300,
                     ),
-                    const Icon(Icons.keyboard_arrow_down),
-                  ],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Select category...',
+                        style: GoogleFonts.outfit(
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: AppTheme.primaryBlue,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -178,23 +208,24 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               // Description
               Text(
                 'DESCRIPTION (OPTIONAL)',
-                style: theme.textTheme.labelSmall?.copyWith(
+                style: GoogleFonts.outfit(
                   fontWeight: FontWeight.w600,
-                  color: theme.hintColor,
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: descriptionController,
-                maxLines: 6,
+                maxLines: 5,
                 minLines: 4,
+                style: GoogleFonts.outfit(),
                 decoration: InputDecoration(
                   hintText: 'Provide more details about the hazard...',
                   filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  fillColor: AppTheme.cardWhite,
+                  hintStyle: GoogleFonts.outfit(color: Colors.grey.shade500),
                 ),
               ),
               const SizedBox(height: 24),
@@ -203,35 +234,53 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppTheme.primaryBlue.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: theme.colorScheme.primary,
+                    color: AppTheme.primaryBlue.withOpacity(0.4),
+                    width: 1.5,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryBlue.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.location_on,
-                      color: theme.colorScheme.primary,
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.gps_fixed_rounded,
+                        color: AppTheme.primaryBlue,
+                        size: 24,
+                      ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Automatic GPS Tagging',
-                            style: theme.textTheme.bodyMedium?.copyWith(
+                            style: GoogleFonts.outfit(
                               fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.primary,
+                              color: AppTheme.primaryBlue,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Your precise location (14.5996°N, 120.9842°E) will be attached automatically.',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.primary,
+                            style: GoogleFonts.outfit(
+                              color: AppTheme.primaryBlue.withOpacity(0.9),
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -240,44 +289,122 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Offline notice
-              Text(
-                'If you are offline, your report will be saved locally and synced automatically when a connection is restored.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.hintColor,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_off_outlined,
+                      size: 20,
+                      color: Colors.grey.shade600,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Offline reports are saved locally and synced when connected.',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 28),
 
               // Submit Button
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 56,
                 child: ElevatedButton.icon(
                   onPressed: () {
                     debugPrint('Submit Report');
                   },
-                  icon: const Icon(Icons.arrow_forward),
+                  icon: const Icon(Icons.send_rounded, size: 22),
                   label: const Text('Submit Report'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.error,
+                    backgroundColor: AppTheme.primaryBlue,
                     foregroundColor: Colors.white,
+                    elevation: 3,
+                    shadowColor: AppTheme.primaryBlue.withOpacity(0.4),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    textStyle: GoogleFonts.interTight(
+                    textStyle: GoogleFonts.outfit(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavBarTapped,
+        backgroundColor: Colors.transparent,
+        selectedItemColor: AppTheme.primaryBlue,
+        unselectedItemColor: Colors.grey.shade500,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(
+              _selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+            ),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              _selectedIndex == 1
+                  ? Icons.assessment_rounded
+                  : Icons.assessment_outlined,
+            ),
+            label: 'Reports',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              _selectedIndex == 2 ? Icons.map_rounded : Icons.map_outlined,
+            ),
+            label: 'Maps',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              _selectedIndex == 3
+                  ? Icons.person_rounded
+                  : Icons.person_outline_rounded,
+            ),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }
