@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
 import 'maps.dart';
+import 'notifications.dart';
 import 'profile.dart';
 import 'reports.dart';
 
@@ -22,6 +23,9 @@ class _HomeWidgetState extends State<HomeWidget> {
     });
 
     switch (index) {
+      case 0:
+        // Home tab - already here
+        break;
       case 1:
         Navigator.pushReplacement(
           context,
@@ -31,10 +35,16 @@ class _HomeWidgetState extends State<HomeWidget> {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
+          MaterialPageRoute(builder: (context) => const NotificationsPage()),
         );
         break;
       case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
+        );
+        break;
+      case 4:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const ProfilePage()),
@@ -83,23 +93,29 @@ class _HomeWidgetState extends State<HomeWidget> {
 
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardWhite,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                      GestureDetector(
+                        onTap: () => _onNavBarTapped(2),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.cardWhite,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Badge(
+                            label: Text('2', style: TextStyle(fontSize: 10)),
+                            child: Icon(
+                              Icons.notifications_outlined,
+                              color: AppTheme.primaryBlue,
+                              size: 22,
                             ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.notifications_outlined,
-                          color: AppTheme.primaryBlue,
-                          size: 22,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -468,13 +484,21 @@ class _HomeWidgetState extends State<HomeWidget> {
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                _selectedIndex == 2 ? Icons.map_rounded : Icons.map_outlined,
+                _selectedIndex == 2
+                    ? Icons.notifications_rounded
+                    : Icons.notifications_outlined,
+              ),
+              label: 'Alerts',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                _selectedIndex == 3 ? Icons.map_rounded : Icons.map_outlined,
               ),
               label: 'Maps',
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                _selectedIndex == 3
+                _selectedIndex == 4
                     ? Icons.person_rounded
                     : Icons.person_outline_rounded,
               ),

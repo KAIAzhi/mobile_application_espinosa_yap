@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import 'home.dart';
 import 'maps.dart';
+import 'notifications.dart';
 import 'profile.dart';
 
 class ReportsWidget extends StatefulWidget {
@@ -34,14 +35,18 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         // Reports tab - already here
         break;
       case 2:
-        // Maps tab
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationsPage()),
+        );
+        break;
+      case 3:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
         );
         break;
-      case 3:
-        // Profile tab
+      case 4:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const ProfilePage()),
@@ -392,13 +397,21 @@ class _ReportsWidgetState extends State<ReportsWidget> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              _selectedIndex == 2 ? Icons.map_rounded : Icons.map_outlined,
+              _selectedIndex == 2
+                  ? Icons.notifications_rounded
+                  : Icons.notifications_outlined,
+            ),
+            label: 'Alerts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              _selectedIndex == 3 ? Icons.map_rounded : Icons.map_outlined,
             ),
             label: 'Maps',
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              _selectedIndex == 3
+              _selectedIndex == 4
                   ? Icons.person_rounded
                   : Icons.person_outline_rounded,
             ),

@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../theme/app_theme.dart';
 import 'home.dart';
+import 'notifications.dart';
 import 'profile.dart';
 import 'reports.dart';
 
@@ -15,7 +16,7 @@ class HazardDetailsPage extends StatefulWidget {
 }
 
 class _HazardDetailsPageState extends State<HazardDetailsPage> {
-  final int _selectedIndex = 2;
+  final int _selectedIndex = 3;
 
   final LatLng hazardLocation = const LatLng(10.3157, 123.8854); // Example Cebu City coordinates
 
@@ -34,9 +35,15 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
         );
         break;
       case 2:
-        // Maps tab - already here
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationsPage()),
+        );
         break;
       case 3:
+        // Maps tab - already here
+        break;
+      case 4:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const ProfilePage()),
@@ -421,13 +428,21 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                _selectedIndex == 2 ? Icons.map_rounded : Icons.map_outlined,
+                _selectedIndex == 2
+                    ? Icons.notifications_rounded
+                    : Icons.notifications_outlined,
+              ),
+              label: 'Alerts',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                _selectedIndex == 3 ? Icons.map_rounded : Icons.map_outlined,
               ),
               label: 'Maps',
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                _selectedIndex == 3
+                _selectedIndex == 4
                     ? Icons.person_rounded
                     : Icons.person_outline_rounded,
               ),
