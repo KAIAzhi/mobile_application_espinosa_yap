@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'home.dart';
 
@@ -12,10 +13,12 @@ class LoginnWidget extends StatefulWidget {
 }
 
 class _LoginnWidgetState extends State<LoginnWidget> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   bool passwordVisible = false;
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -30,44 +33,48 @@ class _LoginnWidgetState extends State<LoginnWidget> {
 
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Logo
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.primaryBlue, AppTheme.primaryBlueDark],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryBlue.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+            // Logo
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryBlue, AppTheme.primaryBlueDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.medical_services,
+                color: Colors.white,
+                size: 60,
+              ),
             ),
-            child: const Icon(
-              Icons.medical_services,
-              color: Colors.white,
-              size: 60,
-            ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Title
-          Text(
-            'RescueHub',
-            style: GoogleFonts.interTight(
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
+            // Title
+            Text(
+              'RescueHub',
+              style: GoogleFonts.interTight(
+                fontSize: 32,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           Text(
             'Community-led disaster response',
@@ -91,6 +98,12 @@ class _LoginnWidgetState extends State<LoginnWidget> {
           TextFormField(
             controller: emailController,
             keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Email or mobile number is required';
+              }
+              return null;
+            },
             decoration: InputDecoration(
               hintText: 'name@email.com or +63...',
               prefixIcon: const Icon(Icons.contact_mail),
@@ -118,6 +131,12 @@ class _LoginnWidgetState extends State<LoginnWidget> {
           TextFormField(
             controller: passwordController,
             obscureText: !passwordVisible,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Password is required';
+              }
+              return null;
+            },
             decoration: InputDecoration(
               hintText: '••••••••',
               prefixIcon: const Icon(Icons.lock),
@@ -164,19 +183,70 @@ class _LoginnWidgetState extends State<LoginnWidget> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeWidget()),
-                );
-              },
-              icon: const Icon(Icons.login, size: 22),
-              label: const Text('Login'),
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (!_formKey.currentState!.validate()) return;
+
+                      setState(() {
+                        isLoading = true;
+                      });
+
+                      try {
+                        final user = await ApiService.login(
+                          emailController.text.trim(),
+                          passwordController.text,
+                        );
+
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Welcome ${user.fullName}')),
+                        );
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeWidget(),
+                          ),
+                        );
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        final message = error is Exception
+                            ? error.toString().replaceFirst(
+                                  'Exception: ',
+                                  '',
+                                )
+                            : error.toString();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(message)),
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      }
+                    },
+              icon: isLoading
+                  ? const SizedBox.shrink()
+                  : const Icon(Icons.login, size: 22),
+              label: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Login'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryBlue,
                 foregroundColor: Colors.white,
                 elevation: 3,
-                shadowColor: AppTheme.primaryBlue.withOpacity(0.4),
+                shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -222,6 +292,8 @@ class _LoginnWidgetState extends State<LoginnWidget> {
             ],
           ),
         ],
+          ),
+        ),
       ),
     );
   }

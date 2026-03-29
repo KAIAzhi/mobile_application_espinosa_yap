@@ -7,7 +7,8 @@
     <application
         android:label="mobile_application_dev_endterm"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <!-- Add Google Maps API key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
