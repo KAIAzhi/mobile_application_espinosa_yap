@@ -6,9 +6,11 @@ import 'home.dart';
 import 'maps.dart';
 import 'notifications.dart';
 import 'reports.dart';
+import '../models/users.dart';  // ADD
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final Users user;  // ADD
+  const ProfilePage({super.key, required this.user});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -27,28 +29,28 @@ class _ProfilePageState extends State<ProfilePage> {
         // Home tab
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeWidget()),
+          MaterialPageRoute(builder: (context) => HomeWidget(user: widget.user)),
         );
         break;
       case 1:
         // Reports tab
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ReportsWidget()),
+          MaterialPageRoute(builder: (context) => ReportsWidget(user: widget.user)),
         );
         break;
       case 2:
         // Alerts tab
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NotificationsPage()),
+          MaterialPageRoute(builder: (context) => NotificationsPage(user: widget.user)),
         );
         break;
       case 3:
         // Maps tab
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
+          MaterialPageRoute(builder: (context) => HazardDetailsPage(user: widget.user)),
         );
         break;
       case 4:
@@ -199,7 +201,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               radius: 40,
                               backgroundColor: AppTheme.primaryBlue,
                               child: Text(
-                                "JD",
+                                widget.user.fullName.trim().split(' ').where((e) => e.isNotEmpty).take(2).map((e) => e[0].toUpperCase()).join(),
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
                                   fontSize: 26,
@@ -241,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        "Juan Dela Cruz",
+                       widget.user.fullName,
                         style: GoogleFonts.outfit(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -285,14 +287,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 infoTile(
                   Icons.email_outlined,
                   "Email Address",
-                  "juan.delacruz@email.com",
+                  widget.user.email ?? 'No email'
                 ),
                 const SizedBox(height: 10),
 
                 infoTile(
                   Icons.phone_android,
                   "Mobile Number",
-                  "+63 912 345 6789",
+                  widget.user.mobileNumber ?? 'No number'
                 ),
 
                 const SizedBox(height: 20),

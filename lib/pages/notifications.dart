@@ -6,10 +6,11 @@ import 'home.dart';
 import 'maps.dart';
 import 'profile.dart';
 import 'reports.dart';
+import '../models/users.dart';  // ADD
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
-
+  final Users user;  // ADD
+  const NotificationsPage({super.key, required this.user});
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
 }
@@ -88,13 +89,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeWidget()),
+          MaterialPageRoute(builder: (context) => HomeWidget(user: widget.user)),
         );
         break;
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ReportsWidget()),
+          MaterialPageRoute(builder: (context) => ReportsWidget(user: widget.user)),
         );
         break;
       case 2:
@@ -102,13 +103,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
+          MaterialPageRoute(builder: (context) => HazardDetailsPage(user: widget.user)),
         );
         break;
       case 4:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(user: widget.user)),
         );
         break;
     }

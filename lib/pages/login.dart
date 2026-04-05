@@ -207,7 +207,7 @@ class _LoginnWidgetState extends State<LoginnWidget> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const HomeWidget(),
+                            builder: (context) => HomeWidget(user: user),
                           ),
                         );
                       } catch (error) {

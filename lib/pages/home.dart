@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../models/users.dart';  // ADD THIS
 import '../theme/app_theme.dart';
 import 'maps.dart';
 import 'notifications.dart';
@@ -8,7 +9,9 @@ import 'profile.dart';
 import 'reports.dart';
 
 class HomeWidget extends StatefulWidget {
-  const HomeWidget({super.key});
+  final Users user;  // ADD THIS
+
+  const HomeWidget({super.key, required this.user});  // CHANGE THIS
 
   @override
   State<HomeWidget> createState() => _HomeWidgetState();
@@ -29,25 +32,25 @@ class _HomeWidgetState extends State<HomeWidget> {
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ReportsWidget()),
+          MaterialPageRoute(builder: (context) => ReportsWidget(user: widget.user)),
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NotificationsPage()),
+          MaterialPageRoute(builder: (context) => NotificationsPage(user: widget.user)),
         );
         break;
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HazardDetailsPage()),
+          MaterialPageRoute(builder: (context) => HazardDetailsPage(user: widget.user)),
         );
         break;
       case 4:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(user: widget.user)),
         );
         break;
     }
@@ -82,7 +85,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                         ),
                       ),
                       Text(
-                        "Juan Dela Cruz",
+                        widget.user.fullName,
                         style: GoogleFonts.outfit(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -123,7 +126,13 @@ class _HomeWidgetState extends State<HomeWidget> {
                         radius: 22,
                         backgroundColor: AppTheme.primaryBlue,
                         child: Text(
-                          "JD",
+                          widget.user.fullName
+                            .trim()
+                            .split(' ')
+                            .where((e) => e.isNotEmpty)
+                            .take(2)
+                            .map((e) => e[0].toUpperCase())
+                            .join(),
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,

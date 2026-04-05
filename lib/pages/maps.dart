@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../models/users.dart';
 import '../theme/app_theme.dart';
 import 'home.dart';
 import 'notifications.dart';
@@ -9,7 +10,8 @@ import 'profile.dart';
 import 'reports.dart';
 
 class HazardDetailsPage extends StatefulWidget {
-  const HazardDetailsPage({super.key});
+  final Users user;  // ADD
+  const HazardDetailsPage({super.key, required this.user});  // CHANGE
 
   @override
   State<HazardDetailsPage> createState() => _HazardDetailsPageState();
@@ -25,19 +27,19 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeWidget()),
+          MaterialPageRoute(builder: (context) => HomeWidget(user: widget.user)),
         );
         break;
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ReportsWidget()),
+          MaterialPageRoute(builder: (context) => ReportsWidget(user: widget.user)),
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NotificationsPage()),
+          MaterialPageRoute(builder: (context) => NotificationsPage(user: widget.user)),
         );
         break;
       case 3:
@@ -46,7 +48,7 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
       case 4:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(user: widget.user)),
         );
         break;
     }
@@ -281,7 +283,7 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
                     radius: 24,
                     backgroundColor: AppTheme.primaryBlue,
                     child: Text(
-                      "JD",
+                      widget.user.fullName.trim().split(' ').where((e) => e.isNotEmpty).take(2).map((e) => e[0].toUpperCase()).join(),
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -300,7 +302,7 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
                         ),
                       ),
                       Text(
-                        "Juan Dela Cruz",
+                        widget.user.fullName,
                         style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold,
                         ),
