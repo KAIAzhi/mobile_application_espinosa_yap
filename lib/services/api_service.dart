@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import '../models/users.dart';
+import '../models/hazard_report.dart';
 
 class ApiService {
   /// Hostinger redirects HTTP → HTTPS (301). POST must use HTTPS or the client gets 301 with no JSON body.
@@ -94,4 +95,77 @@ class ApiService {
     }
     throw Exception('Invalid user data from server.');
   }
+
+  //start1 reports
+  static const String reportsUrl = 'https://webhoster3b.com/rescuehub/apis/reports.php';
+
+      static Future<List<HazardReport>> fetchHazardReports(int userId) async {
+      late final http.Response response;
+      try {
+        response = await http.get(
+          Uri.parse('$reportsUrl?action=list&user_id=$userId'),
+        );
+      } on SocketException {
+        throw Exception('No internet connection.');
+      } on http.ClientException {
+        throw Exception('Could not reach the server.');
+      }
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load reports (HTTP ${response.statusCode})');
+      }
+
+      final dynamic decoded;
+      try {
+        decoded = jsonDecode(response.body);
+      } on FormatException {
+        throw Exception('Invalid response from server.');
+      }
+
+      if (decoded == null || decoded['status'] != 'success') {
+        final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
+        throw Exception('API error: $message');
+      }
+
+      final List<dynamic> reportsJson = decoded['data'] ?? [];
+      return reportsJson.map((e) {
+        return HazardReport.fromJson(Map<String, dynamic>.from(e));
+      }).toList();
+    }
+  //end1 reports
+  //start2 profile reports
+  static Future<Map<String, int>> fetchUserStats(int userId) async {
+    late final http.Response response;
+    try {
+      response = await http.get(
+        Uri.parse('$reportsUrl?action=stats&user_id=$userId'),
+      );
+    } on SocketException {
+      throw Exception('No internet connection.');
+    } on http.ClientException {
+      throw Exception('Could not reach the server.');
+    }
+
+    final dynamic decoded;
+    try {
+      decoded = jsonDecode(response.body);
+    } on FormatException {
+      throw Exception('Invalid response from server.');
+    }
+
+    if (decoded == null || decoded['status'] != 'success') {
+      final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
+      throw Exception('API error: $message');
+    }
+
+    final data = decoded['data'];
+    return {
+      'total_reports': int.tryParse(data['total_reports'].toString()) ?? 0,
+      'verified': int.tryParse(data['verified'].toString()) ?? 0,
+    };
+  }//end2 profile reports
+
+  //start3 submit report
+  
+  //end3 submit report
 }

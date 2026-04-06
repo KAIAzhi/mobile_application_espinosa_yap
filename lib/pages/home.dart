@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../models/users.dart';  // ADD THIS
+import '../models/users.dart';
+import '../models/hazard_report.dart';
+import '../services/api_service.dart';     // ADD THIS
 import '../theme/app_theme.dart';
 import 'maps.dart';
 import 'notifications.dart';
@@ -15,11 +17,40 @@ class HomeWidget extends StatefulWidget {
 
   @override
   State<HomeWidget> createState() => _HomeWidgetState();
+  
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
   int _selectedIndex = 0;
+  List<HazardReport> _reports = [];
+  bool _isLoading = true;
 
+  Color _statusColor(String hex) {
+  try {
+    return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
+  } catch (_) {
+    return Colors.grey;
+  }
+}
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReports();
+  }
+
+  Future<void> _loadReports() async {
+  try {
+    final reports = await ApiService.fetchHazardReports(widget.user.id);
+    setState(() {
+      _reports = reports;
+      _isLoading = false;
+    });
+  } catch (e) {
+    setState(() => _isLoading = false);
+  }
+}
+  
   void _onNavBarTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -412,6 +443,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               const SizedBox(height: 25),
 
               /// RECENT REPORTS
+              /// RECENT REPORTS
               Text(
                 "My Recent Reports",
                 style: GoogleFonts.outfit(
@@ -422,32 +454,26 @@ class _HomeWidgetState extends State<HomeWidget> {
 
               const SizedBox(height: 12),
 
-              _reportCard(
-                "Downed Utility Wire",
-                "Corner of Rizal and Mabini St.",
-                "UNDER INVESTIGATION",
-                AppTheme.primaryBlue,
-              ),
-
-              const SizedBox(height: 12),
-
-              _reportCard(
-                "Moderate Flooding",
-                "Barangay Hall Perimeter",
-                "NEEDS UTILITY SUPPORT",
-                AppTheme.accentAmber,
-              ),
-
-              const SizedBox(height: 20),
-
-              Center(
-                child: Text(
-                  "All reports synced and up to date",
-                  style: GoogleFonts.outfit(
-                    color: Colors.grey,
-                  ),
-                ),
-              )
+              _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _reports.isEmpty
+                  ? Center(
+                      child: Text(
+                        "No reports yet.",
+                        style: GoogleFonts.outfit(color: Colors.grey),
+                      ),
+                    )
+                  : Column(
+                      children: _reports.take(5).map((report) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _reportCard(
+                          report.title,
+                          report.locationText,
+                          report.currentStatus.toUpperCase(),
+                          _statusColor(report.statusColor),
+                        ),
+                      )).toList(),
+                    ),
             ],
           ),
         ),
