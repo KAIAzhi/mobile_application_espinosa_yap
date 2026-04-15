@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/users.dart';
 import '../models/hazard_report.dart';
+import '../models/hazard_type.dart';
 
 class ApiService {
   /// Hostinger redirects HTTP → HTTPS (301). POST must use HTTPS or the client gets 301 with no JSON body.
@@ -166,6 +167,76 @@ class ApiService {
   }//end2 profile reports
 
   //start3 submit report
-  
+static Future<void> submitReport({
+  required int userId,
+  required int barangayId,
+  required int hazardTypeId,
+  required String title,
+  required String description,
+  required double latitude,
+  required double longitude,
+  required String locationText,
+  required String severity,
+  File? imageFile,
+}) async {
+  var uri = Uri.parse(reportsUrl);
+
+  var request = http.MultipartRequest('POST', uri);
+
+  request.fields.addAll({
+    'action': 'submit',
+    'user_id': userId.toString(),
+    'barangay_id': barangayId.toString(),
+    'hazard_type_id': hazardTypeId.toString(),
+    'title': title,
+    'description': description,
+    'latitude': latitude.toString(),
+    'longitude': longitude.toString(),
+    'location_text': locationText,
+    'severity': severity,
+  });
+
+  if (imageFile != null) {
+    request.files.add(
+      await http.MultipartFile.fromPath('image', imageFile.path),
+    );
+  }
+
+  late http.StreamedResponse response;
+
+  try {
+    response = await request.send();
+  } on SocketException {
+    throw Exception('No internet connection.');
+  }
+
+  final respStr = await response.stream.bytesToString();
+
+  final decoded = jsonDecode(respStr);
+
+  if (response.statusCode != 200 || decoded['status'] != 'success') {
+    throw Exception(decoded['message'] ?? 'Failed to submit report.');
+  }
+}
   //end3 submit report
+static Future<List<HazardType>> fetchHazardTypes() async {
+  final response = await http.get(
+    Uri.parse('$reportsUrl?action=hazard_types'),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Failed to load hazard types');
+  }
+
+  final decoded = jsonDecode(response.body);
+
+  if (decoded is! Map || decoded['status'] != 'success') {
+    throw Exception(decoded['message'] ?? 'Invalid API response');
+  }
+
+  final List data = decoded['data'] ?? [];
+
+  return data.map((e) => HazardType.fromJson(e)).toList();
+}
+
 }
