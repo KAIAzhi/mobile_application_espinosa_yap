@@ -552,7 +552,7 @@ class _ReportsWidgetState extends State<ReportsWidget> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: _myReports.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final report = _myReports[index];
         final color = _statusColor(report.statusColor);
@@ -572,7 +572,7 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                     ? Image.network(
                         report.imageUrl!,
                         width: 56, height: 56, fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _reportIcon(color),
+                        errorBuilder: (_, _, _) => _reportIcon(color),
                       )
                     : _reportIcon(color),
               ),
