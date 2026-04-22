@@ -221,7 +221,7 @@ static Future<void> submitReport({
   //end3 submit report
 static Future<List<HazardType>> fetchHazardTypes() async {
   final response = await http.get(
-    Uri.parse('$reportsUrl?action=hazard_types'),
+    Uri.parse('$reportsUrl?action=list_hazardtype'),
   );
 
   if (response.statusCode != 200) {

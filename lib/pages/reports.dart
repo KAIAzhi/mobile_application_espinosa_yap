@@ -49,14 +49,25 @@ class _ReportsWidgetState extends State<ReportsWidget> {
   }
 
   Future<void> _loadHazardTypes() async {
-  try {
-    final types = await ApiService.fetchHazardTypes();
-    setState(() {
-      _hazardTypes = types;
-      _selectedHazardTypeId = null; // reset safely
-    });
-  } catch (_) {}
-}
+    try {
+      final types = await ApiService.fetchHazardTypes();
+      if (!mounted) return;
+
+      setState(() {
+        _hazardTypes = types;
+        _selectedHazardTypeId = null;
+      });
+
+      debugPrint('Hazard types loaded: ${types.length}');
+    } catch (e) {
+      debugPrint('Failed to load hazard types: $e');
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load hazard types: $e')),
+      );
+    }
+  }
 
   Future<void> _loadMyReports() async {
     try {
@@ -450,16 +461,19 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                     ? _selectedHazardTypeId
                     : null,
                 isExpanded: true,
-                hint: Text('Select category...', style: GoogleFonts.outfit(color: Colors.grey.shade600)),
-                items: _hazardTypes.isEmpty
-                    ? []
-                    : _hazardTypes.map((type) {
-                        return DropdownMenuItem<int>(
-                          value: type.hazardTypeId,
-                          child: Text(type.name),
-                        );
-                      }).toList(),
-                onChanged: (val) => setState(() => _selectedHazardTypeId = val),
+                hint: Text(
+                  _hazardTypes.isEmpty ? 'No hazard types loaded' : 'Select category...',
+                  style: GoogleFonts.outfit(color: Colors.grey.shade600),
+                ),
+                items: _hazardTypes.map((type) {
+                  return DropdownMenuItem<int>(
+                    value: type.hazardTypeId,
+                    child: Text(type.name),
+                  );
+                }).toList(),
+                onChanged: _hazardTypes.isEmpty
+                    ? null
+                    : (val) => setState(() => _selectedHazardTypeId = val),
               ),
             ),
           ),
