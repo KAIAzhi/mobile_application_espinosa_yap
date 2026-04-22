@@ -51,22 +51,8 @@ class _ReportsWidgetState extends State<ReportsWidget> {
   Future<void> _loadHazardTypes() async {
     try {
       final types = await ApiService.fetchHazardTypes();
-      if (!mounted) return;
-
-      setState(() {
-        _hazardTypes = types;
-        _selectedHazardTypeId = null;
-      });
-
-      debugPrint('Hazard types loaded: ${types.length}');
-    } catch (e) {
-      debugPrint('Failed to load hazard types: $e');
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load hazard types: $e')),
-      );
-    }
+      setState(() => _hazardTypes = types);
+    } catch (_) {}
   }
 
   Future<void> _loadMyReports() async {
@@ -81,7 +67,6 @@ class _ReportsWidgetState extends State<ReportsWidget> {
     }
   }
 
-  // Pick image from gallery or camera
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -89,9 +74,7 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         imageQuality: 80,
         maxWidth: 1080,
       );
-      if (image != null) {
-        setState(() => _selectedImage = File(image.path));
-      }
+      if (image != null) setState(() => _selectedImage = File(image.path));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,10 +95,8 @@ class _ReportsWidgetState extends State<ReportsWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Add Hazard Photo',
-                style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              Text('Add Hazard Photo',
+                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -175,9 +156,9 @@ class _ReportsWidgetState extends State<ReportsWidget> {
   }
 
   Future<void> _submitReport() async {
-    if (_selectedHazardTypeId == null) {
+    if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a hazard type')),
+        const SnackBar(content: Text('Please add a photo as evidence')),
       );
       return;
     }
@@ -187,9 +168,9 @@ class _ReportsWidgetState extends State<ReportsWidget> {
       );
       return;
     }
-    if (_selectedImage == null) {
+    if (_selectedHazardTypeId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add a photo as evidence')),
+        const SnackBar(content: Text('Please select a hazard type')),
       );
       return;
     }
@@ -215,7 +196,6 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         const SnackBar(content: Text('Report submitted successfully! ✅')),
       );
 
-      // Clear form
       _titleController.clear();
       _descriptionController.clear();
       _locationController.clear();
@@ -226,7 +206,6 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         _isSubmitting = false;
         _tabIndex = 1;
       });
-
       _loadMyReports();
 
     } catch (e) {
@@ -297,7 +276,6 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
 
             // Tab switcher
@@ -317,7 +295,6 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
 
             Expanded(
@@ -388,8 +365,7 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                           child: Image.file(_selectedImage!, width: double.infinity, height: 200, fit: BoxFit.cover),
                         ),
                         Positioned(
-                          top: 8,
-                          right: 8,
+                          top: 8, right: 8,
                           child: GestureDetector(
                             onTap: () => setState(() => _selectedImage = null),
                             child: Container(
@@ -400,8 +376,7 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                           ),
                         ),
                         Positioned(
-                          bottom: 8,
-                          right: 8,
+                          bottom: 8, right: 8,
                           child: GestureDetector(
                             onTap: _showImageSourceDialog,
                             child: Container(
@@ -457,23 +432,16 @@ class _ReportsWidgetState extends State<ReportsWidget> {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<int>(
-                value: _hazardTypes.any((e) => e.hazardTypeId == _selectedHazardTypeId)
-                    ? _selectedHazardTypeId
-                    : null,
+                value: _selectedHazardTypeId,
                 isExpanded: true,
-                hint: Text(
-                  _hazardTypes.isEmpty ? 'No hazard types loaded' : 'Select category...',
-                  style: GoogleFonts.outfit(color: Colors.grey.shade600),
-                ),
+                hint: Text('Select category...', style: GoogleFonts.outfit(color: Colors.grey.shade600)),
                 items: _hazardTypes.map((type) {
                   return DropdownMenuItem<int>(
                     value: type.hazardTypeId,
-                    child: Text(type.name),
+                    child: Text(type.name, style: GoogleFonts.outfit()),
                   );
                 }).toList(),
-                onChanged: _hazardTypes.isEmpty
-                    ? null
-                    : (val) => setState(() => _selectedHazardTypeId = val),
+                onChanged: (val) => setState(() => _selectedHazardTypeId = val),
               ),
             ),
           ),
@@ -597,11 +565,16 @@ class _ReportsWidgetState extends State<ReportsWidget> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
-                child: Icon(Icons.warning_amber_rounded, color: color, size: 26),
+              // Show image if available, otherwise icon
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: report.imageUrl != null
+                    ? Image.network(
+                        report.imageUrl!,
+                        width: 56, height: 56, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _reportIcon(color),
+                      )
+                    : _reportIcon(color),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -624,6 +597,14 @@ class _ReportsWidgetState extends State<ReportsWidget> {
           ),
         );
       },
+    );
+  }
+
+  Widget _reportIcon(Color color) {
+    return Container(
+      width: 56, height: 56,
+      decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+      child: Icon(Icons.warning_amber_rounded, color: color, size: 26),
     );
   }
 

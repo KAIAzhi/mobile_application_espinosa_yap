@@ -12,6 +12,7 @@ class HazardReport {
   final String barangayName;
   final String reporterName;
   final String createdAt;
+  final String? imageUrl;  // ADD THIS
 
   HazardReport({
     required this.reportId,
@@ -27,6 +28,7 @@ class HazardReport {
     required this.barangayName,
     required this.reporterName,
     required this.createdAt,
+    this.imageUrl,  // ADD THIS
   });
 
   factory HazardReport.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class HazardReport {
       barangayName: json['barangay_name']?.toString() ?? '',
       reporterName: json['reporter_name']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? '',
+      imageUrl: json['image_url']?.toString(),  // ADD THIS
     );
   }
 }
