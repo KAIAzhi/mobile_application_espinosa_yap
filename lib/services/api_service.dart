@@ -233,4 +233,30 @@ class ApiService {
       throw Exception('API error: $message');
     }
   }
+
+  static Future<List<HazardReport>> fetchAllHazards() async {
+    late final http.Response response;
+    try {
+      response = await http.get(Uri.parse('$reportsUrl?action=list_all'));
+    } on SocketException {
+      throw Exception('No internet connection.');
+    } on http.ClientException {
+      throw Exception('Could not reach the server.');
+    }
+
+    final dynamic decoded;
+    try {
+      decoded = jsonDecode(response.body);
+    } on FormatException {
+      throw Exception('Invalid response from server.');
+    }
+
+    if (decoded == null || decoded['status'] != 'success') {
+      final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
+      throw Exception('API error: $message');
+    }
+
+    final List<dynamic> json = decoded['data'] ?? [];
+    return json.map((e) => HazardReport.fromJson(Map<String, dynamic>.from(e))).toList();
+  }
 }

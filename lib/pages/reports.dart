@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -37,6 +38,12 @@ class _ReportsWidgetState extends State<ReportsWidget> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
+  // GPS
+  double _latitude = 10.6713;
+  double _longitude = 122.9511;
+  bool _locationLoading = false;
+  String _locationText = '';
+
   // My Reports
   List<HazardReport> _myReports = [];
   bool _isLoadingReports = true;
@@ -46,6 +53,44 @@ class _ReportsWidgetState extends State<ReportsWidget> {
     super.initState();
     _loadHazardTypes();
     _loadMyReports();
+    _getLocation();
+  }
+
+  Future<void> _getLocation() async {
+    setState(() => _locationLoading = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) throw Exception('Location services are disabled.');
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permission denied.');
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Location permission permanently denied.');
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        _locationText =
+            '${position.latitude.toStringAsFixed(4)}°N, ${position.longitude.toStringAsFixed(4)}°E';
+        _locationLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _locationLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   Future<void> _loadHazardTypes() async {
@@ -96,7 +141,8 @@ class _ReportsWidgetState extends State<ReportsWidget> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Add Hazard Photo',
-                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                  style: GoogleFonts.outfit(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -114,9 +160,13 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                         ),
                         child: Column(
                           children: [
-                            Icon(Icons.camera_alt_rounded, color: AppTheme.primaryBlue, size: 36),
+                            Icon(Icons.camera_alt_rounded,
+                                color: AppTheme.primaryBlue, size: 36),
                             const SizedBox(height: 8),
-                            Text('Camera', style: GoogleFonts.outfit(color: AppTheme.primaryBlue, fontWeight: FontWeight.w600)),
+                            Text('Camera',
+                                style: GoogleFonts.outfit(
+                                    color: AppTheme.primaryBlue,
+                                    fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -137,9 +187,13 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                         ),
                         child: Column(
                           children: [
-                            Icon(Icons.photo_library_rounded, color: AppTheme.primaryBlue, size: 36),
+                            Icon(Icons.photo_library_rounded,
+                                color: AppTheme.primaryBlue, size: 36),
                             const SizedBox(height: 8),
-                            Text('Gallery', style: GoogleFonts.outfit(color: AppTheme.primaryBlue, fontWeight: FontWeight.w600)),
+                            Text('Gallery',
+                                style: GoogleFonts.outfit(
+                                    color: AppTheme.primaryBlue,
+                                    fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -184,8 +238,8 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         hazardTypeId: _selectedHazardTypeId!,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        latitude: 10.6713,
-        longitude: 122.9511,
+        latitude: _latitude,
+        longitude: _longitude,
         locationText: _locationController.text.trim(),
         severity: _selectedSeverity,
         imageFile: _selectedImage,
@@ -207,11 +261,12 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         _tabIndex = 1;
       });
       _loadMyReports();
-
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+            content:
+                Text(e.toString().replaceFirst('Exception: ', ''))),
       );
       setState(() => _isSubmitting = false);
     }
@@ -222,21 +277,27 @@ class _ReportsWidgetState extends State<ReportsWidget> {
     switch (index) {
       case 0:
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => HomeWidget(user: widget.user)));
+            MaterialPageRoute(
+                builder: (context) => HomeWidget(user: widget.user)));
         break;
       case 1:
         break;
       case 2:
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => NotificationsPage(user: widget.user)));
+            MaterialPageRoute(
+                builder: (context) =>
+                    NotificationsPage(user: widget.user)));
         break;
       case 3:
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => HazardDetailsPage(user: widget.user)));
+            MaterialPageRoute(
+                builder: (context) =>
+                    HazardDetailsPage(user: widget.user)));
         break;
       case 4:
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => ProfilePage(user: widget.user)));
+            MaterialPageRoute(
+                builder: (context) => ProfilePage(user: widget.user)));
         break;
     }
   }
@@ -269,10 +330,13 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                       color: AppTheme.primaryBlue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.warning_amber_rounded, color: AppTheme.primaryBlue, size: 28),
+                    child: Icon(Icons.warning_amber_rounded,
+                        color: AppTheme.primaryBlue, size: 28),
                   ),
                   const SizedBox(width: 12),
-                  Text('Reports', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text('Reports',
+                      style: GoogleFonts.outfit(
+                          fontSize: 22, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -285,7 +349,11 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                 decoration: BoxDecoration(
                   color: AppTheme.cardWhite,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8)
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -298,7 +366,8 @@ class _ReportsWidgetState extends State<ReportsWidget> {
             const SizedBox(height: 16),
 
             Expanded(
-              child: _tabIndex == 0 ? _buildSubmitForm() : _buildMyReports(),
+              child:
+                  _tabIndex == 0 ? _buildSubmitForm() : _buildMyReports(),
             ),
           ],
         ),
@@ -355,34 +424,51 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                       : AppTheme.primaryBlue.withOpacity(0.3),
                   width: 2,
                 ),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2))],
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2))
+                ],
               ),
               child: _selectedImage != null
                   ? Stack(
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(14),
-                          child: Image.file(_selectedImage!, width: double.infinity, height: 200, fit: BoxFit.cover),
+                          child: Image.file(_selectedImage!,
+                              width: double.infinity,
+                              height: 200,
+                              fit: BoxFit.cover),
                         ),
                         Positioned(
-                          top: 8, right: 8,
+                          top: 8,
+                          right: 8,
                           child: GestureDetector(
-                            onTap: () => setState(() => _selectedImage = null),
+                            onTap: () =>
+                                setState(() => _selectedImage = null),
                             child: Container(
                               padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                              child: const Icon(Icons.close, color: Colors.white, size: 16),
+                              decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle),
+                              child: const Icon(Icons.close,
+                                  color: Colors.white, size: 16),
                             ),
                           ),
                         ),
                         Positioned(
-                          bottom: 8, right: 8,
+                          bottom: 8,
+                          right: 8,
                           child: GestureDetector(
                             onTap: _showImageSourceDialog,
                             child: Container(
                               padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(color: AppTheme.primaryBlue, shape: BoxShape.circle),
-                              child: const Icon(Icons.edit, color: Colors.white, size: 16),
+                              decoration: BoxDecoration(
+                                  color: AppTheme.primaryBlue,
+                                  shape: BoxShape.circle),
+                              child: const Icon(Icons.edit,
+                                  color: Colors.white, size: 16),
                             ),
                           ),
                         ),
@@ -391,17 +477,27 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo_rounded, size: 48, color: AppTheme.primaryBlue.withOpacity(0.6)),
+                        Icon(Icons.add_a_photo_rounded,
+                            size: 48,
+                            color:
+                                AppTheme.primaryBlue.withOpacity(0.6)),
                         const SizedBox(height: 8),
-                        Text('Tap to add photo', style: GoogleFonts.outfit(color: AppTheme.primaryBlue, fontWeight: FontWeight.w500)),
+                        Text('Tap to add photo',
+                            style: GoogleFonts.outfit(
+                                color: AppTheme.primaryBlue,
+                                fontWeight: FontWeight.w500)),
                         const SizedBox(height: 4),
-                        Text('Camera or Gallery', style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12)),
+                        Text('Camera or Gallery',
+                            style: GoogleFonts.outfit(
+                                color: Colors.grey, fontSize: 12)),
                       ],
                     ),
             ),
           ),
           const SizedBox(height: 4),
-          Text('Required for validation', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey.shade600)),
+          Text('Required for validation',
+              style: GoogleFonts.outfit(
+                  fontSize: 12, color: Colors.grey.shade600)),
           const SizedBox(height: 20),
 
           // Title
@@ -414,8 +510,10 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               hintText: 'e.g. Flooded road near barangay hall',
               filled: true,
               fillColor: AppTheme.cardWhite,
-              hintStyle: GoogleFonts.outfit(color: Colors.grey.shade500),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              hintStyle:
+                  GoogleFonts.outfit(color: Colors.grey.shade500),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
           const SizedBox(height: 20),
@@ -434,14 +532,18 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               child: DropdownButton<int>(
                 value: _selectedHazardTypeId,
                 isExpanded: true,
-                hint: Text('Select category...', style: GoogleFonts.outfit(color: Colors.grey.shade600)),
+                hint: Text('Select category...',
+                    style: GoogleFonts.outfit(
+                        color: Colors.grey.shade600)),
                 items: _hazardTypes.map((type) {
                   return DropdownMenuItem<int>(
                     value: type.hazardTypeId,
-                    child: Text(type.name, style: GoogleFonts.outfit()),
+                    child:
+                        Text(type.name, style: GoogleFonts.outfit()),
                   );
                 }).toList(),
-                onChanged: (val) => setState(() => _selectedHazardTypeId = val),
+                onChanged: (val) =>
+                    setState(() => _selectedHazardTypeId = val),
               ),
             ),
           ),
@@ -464,10 +566,13 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                 items: ['low', 'medium', 'high', 'critical'].map((s) {
                   return DropdownMenuItem(
                     value: s,
-                    child: Text(s[0].toUpperCase() + s.substring(1), style: GoogleFonts.outfit()),
+                    child: Text(
+                        s[0].toUpperCase() + s.substring(1),
+                        style: GoogleFonts.outfit()),
                   );
                 }).toList(),
-                onChanged: (val) => setState(() => _selectedSeverity = val!),
+                onChanged: (val) =>
+                    setState(() => _selectedSeverity = val!),
               ),
             ),
           ),
@@ -483,8 +588,10 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               hintText: 'e.g. Corner Rizal St., Barangay 22',
               filled: true,
               fillColor: AppTheme.cardWhite,
-              hintStyle: GoogleFonts.outfit(color: Colors.grey.shade500),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              hintStyle:
+                  GoogleFonts.outfit(color: Colors.grey.shade500),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)),
               prefixIcon: const Icon(Icons.location_on_outlined),
             ),
           ),
@@ -502,8 +609,105 @@ class _ReportsWidgetState extends State<ReportsWidget> {
               hintText: 'Provide more details about the hazard...',
               filled: true,
               fillColor: AppTheme.cardWhite,
-              hintStyle: GoogleFonts.outfit(color: Colors.grey.shade500),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              hintStyle:
+                  GoogleFonts.outfit(color: Colors.grey.shade500),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // GPS card
+          GestureDetector(
+            onTap: _locationLoading ? null : _getLocation,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBlue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: AppTheme.primaryBlue.withOpacity(0.4),
+                    width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: _locationLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppTheme.primaryBlue),
+                          )
+                        : Icon(Icons.gps_fixed_rounded,
+                            color: AppTheme.primaryBlue, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Automatic GPS Tagging',
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryBlue,
+                              fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _locationText.isNotEmpty
+                              ? 'Location: $_locationText'
+                              : 'Tap to get your current location',
+                          style: GoogleFonts.outfit(
+                              color:
+                                  AppTheme.primaryBlue.withOpacity(0.9),
+                              fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _locationText.isNotEmpty
+                        ? Icons.check_circle_rounded
+                        : Icons.refresh_rounded,
+                    color: _locationText.isNotEmpty
+                        ? AppTheme.successGreen
+                        : AppTheme.primaryBlue,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Offline notice
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.cloud_off_outlined,
+                    size: 20, color: Colors.grey.shade600),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Offline reports are saved locally and synced when connected.',
+                    style: GoogleFonts.outfit(
+                        fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
@@ -515,15 +719,22 @@ class _ReportsWidgetState extends State<ReportsWidget> {
             child: ElevatedButton.icon(
               onPressed: _isSubmitting ? null : _submitReport,
               icon: _isSubmitting
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.send_rounded, size: 22),
-              label: Text(_isSubmitting ? 'Submitting...' : 'Submit Report'),
+              label: Text(
+                  _isSubmitting ? 'Submitting...' : 'Submit Report'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryBlue,
                 foregroundColor: Colors.white,
                 elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+                textStyle: GoogleFonts.outfit(
+                    fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -542,9 +753,12 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.assignment_outlined, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.assignment_outlined,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
-            Text('No reports submitted yet.', style: GoogleFonts.outfit(color: Colors.grey, fontSize: 16)),
+            Text('No reports submitted yet.',
+                style:
+                    GoogleFonts.outfit(color: Colors.grey, fontSize: 16)),
           ],
         ),
       );
@@ -552,7 +766,7 @@ class _ReportsWidgetState extends State<ReportsWidget> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: _myReports.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final report = _myReports[index];
         final color = _statusColor(report.statusColor);
@@ -561,18 +775,25 @@ class _ReportsWidgetState extends State<ReportsWidget> {
           decoration: BoxDecoration(
             color: AppTheme.cardWhite,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4))
+            ],
           ),
           child: Row(
             children: [
-              // Show image if available, otherwise icon
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: report.imageUrl != null
                     ? Image.network(
                         report.imageUrl!,
-                        width: 56, height: 56, fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _reportIcon(color),
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _reportIcon(color),
                       )
                     : _reportIcon(color),
               ),
@@ -581,14 +802,28 @@ class _ReportsWidgetState extends State<ReportsWidget> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(report.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(report.title,
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold, fontSize: 15)),
                     const SizedBox(height: 2),
-                    Text(report.locationText, style: GoogleFonts.outfit(color: Colors.grey.shade600, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(report.locationText,
+                        style: GoogleFonts.outfit(
+                            color: Colors.grey.shade600, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-                      child: Text(report.currentStatus.toUpperCase(), style: GoogleFonts.outfit(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                          color: color.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Text(
+                          report.currentStatus.toUpperCase(),
+                          style: GoogleFonts.outfit(
+                              color: color,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -602,22 +837,31 @@ class _ReportsWidgetState extends State<ReportsWidget> {
 
   Widget _reportIcon(Color color) {
     return Container(
-      width: 56, height: 56,
-      decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-      child: Icon(Icons.warning_amber_rounded, color: color, size: 26),
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(10)),
+      child:
+          Icon(Icons.warning_amber_rounded, color: color, size: 26),
     );
   }
 
   Widget _label(String text) {
     return Text(
       text,
-      style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.grey.shade600, letterSpacing: 0.5),
+      style: GoogleFonts.outfit(
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+          color: Colors.grey.shade600,
+          letterSpacing: 0.5),
     );
   }
 
   Color _statusColor(String hex) {
     try {
-      return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
+      return Color(
+          int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
     } catch (_) {
       return Colors.grey;
     }
@@ -627,7 +871,12 @@ class _ReportsWidgetState extends State<ReportsWidget> {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.cardWhite,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4))
+        ],
       ),
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -640,11 +889,31 @@ class _ReportsWidgetState extends State<ReportsWidget> {
         type: BottomNavigationBarType.fixed,
         elevation: 0,
         items: [
-          BottomNavigationBarItem(icon: Icon(_selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(_selectedIndex == 1 ? Icons.assessment_rounded : Icons.assessment_outlined), label: 'Reports'),
-          BottomNavigationBarItem(icon: Icon(_selectedIndex == 2 ? Icons.notifications_rounded : Icons.notifications_outlined), label: 'Alerts'),
-          BottomNavigationBarItem(icon: Icon(_selectedIndex == 3 ? Icons.map_rounded : Icons.map_outlined), label: 'Maps'),
-          BottomNavigationBarItem(icon: Icon(_selectedIndex == 4 ? Icons.person_rounded : Icons.person_outline_rounded), label: 'Profile'),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 0
+                  ? Icons.home_rounded
+                  : Icons.home_outlined),
+              label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 1
+                  ? Icons.assessment_rounded
+                  : Icons.assessment_outlined),
+              label: 'Reports'),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 2
+                  ? Icons.notifications_rounded
+                  : Icons.notifications_outlined),
+              label: 'Alerts'),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 3
+                  ? Icons.map_rounded
+                  : Icons.map_outlined),
+              label: 'Maps'),
+          BottomNavigationBarItem(
+              icon: Icon(_selectedIndex == 4
+                  ? Icons.person_rounded
+                  : Icons.person_outline_rounded),
+              label: 'Profile'),
         ],
       ),
     );
