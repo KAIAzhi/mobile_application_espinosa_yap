@@ -318,6 +318,46 @@ elseif ($action === 'list_hazardtype') {
     }
 }
 
+elseif ($action === 'list_all') {
+    try {
+        $sql = "SELECT 
+                    hr.report_id,
+                    hr.title,
+                    hr.description,
+                    ht.name AS hazard_type,
+                    ht.color_code AS hazard_color,
+                    rs.status_name AS current_status,
+                    rs.color_code AS status_color,
+                    hr.severity,
+                    hr.latitude,
+                    hr.longitude,
+                    hr.location_text,
+                    b.barangay_name,
+                    u.full_name AS reporter_name,
+                    hr.created_at,
+                    rp.file_url AS image_url
+                FROM hazard_reports hr
+                JOIN hazard_types ht ON hr.hazard_type_id = ht.hazard_type_id
+                JOIN report_statuses rs ON hr.current_status_id = rs.status_id
+                JOIN barangays b ON hr.barangay_id = b.barangay_id
+                JOIN users u ON hr.reporter_user_id = u.user_id
+                LEFT JOIN report_photos rp ON hr.report_id = rp.report_id AND rp.is_primary = 1
+                WHERE rs.is_terminal = 0
+                ORDER BY hr.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode(['status' => 'success', 'data' => $data]);
+        exit;
+
+    } catch (\PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        exit;
+    }
+}
+
 else {
     echo json_encode([
         'status' => 'error',
