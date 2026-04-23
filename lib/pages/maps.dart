@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +27,7 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
 
   List<HazardReport> _hazards = [];
   bool _isLoading = true;
+  String? _errorMessage;
   HazardReport? _selectedHazard;
 
   // Default center — Bacolod City
@@ -38,14 +40,39 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
   }
 
   Future<void> _loadHazards() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     try {
       final hazards = await ApiService.fetchAllHazards();
+      debugPrint('[Maps] Fetched ${hazards.length} hazards from API');
+      if (!mounted) return;
       setState(() {
         _hazards = hazards;
         _isLoading = false;
       });
-    } catch (_) {
-      setState(() => _isLoading = false);
+    } catch (e, stack) {
+      debugPrint('[Maps] Failed to load hazards: $e');
+      debugPrint('$stack');
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not load hazards: $_errorMessage'),
+          backgroundColor: Colors.red.shade600,
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: _loadHazards,
+          ),
+        ),
+      );
     }
   }
 
@@ -121,6 +148,12 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
                     style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
+                  IconButton(
+                    tooltip: 'Refresh',
+                    icon: const Icon(Icons.refresh_rounded),
+                    color: AppTheme.primaryBlue,
+                    onPressed: _isLoading ? null : _loadHazards,
+                  ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -242,71 +275,120 @@ class _HazardDetailsPageState extends State<HazardDetailsPage> {
 
   Widget _buildHazardList() {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
-    if (_hazards.isEmpty) {
+
+    if (_errorMessage != null) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_off_rounded, size: 48, color: Colors.red.shade300),
+              const SizedBox(height: 8),
+              Text(
+                'Failed to load hazards',
+                style: GoogleFonts.outfit(color: Colors.red.shade700, fontWeight: FontWeight.w600, fontSize: 15),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.outfit(color: Colors.grey.shade600, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: _loadHazards,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_hazards.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _loadHazards,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           children: [
+            const SizedBox(height: 40),
             Icon(Icons.check_circle_outline, size: 48, color: Colors.green.shade300),
             const SizedBox(height: 8),
-            Text('No active hazards!', style: GoogleFonts.outfit(color: Colors.grey, fontSize: 15)),
+            Center(
+              child: Text('No active hazards!', style: GoogleFonts.outfit(color: Colors.grey, fontSize: 15)),
+            ),
+            const SizedBox(height: 4),
+            Center(
+              child: Text('Pull down to refresh',
+                  style: GoogleFonts.outfit(color: Colors.grey.shade400, fontSize: 12)),
+            ),
           ],
         ),
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      itemCount: _hazards.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
-      itemBuilder: (context, index) {
-        final h = _hazards[index];
-        final color = _severityColor(h.severity);
-        return GestureDetector(
-          onTap: () {
-            setState(() => _selectedHazard = h);
-            _mapController.move(LatLng(h.latitude, h.longitude), 15);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.cardWhite,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-                  child: Icon(Icons.warning_amber_rounded, color: color, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+
+    return RefreshIndicator(
+      onRefresh: _loadHazards,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        itemCount: _hazards.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (context, index) {
+          final h = _hazards[index];
+          final color = _severityColor(h.severity);
+          return GestureDetector(
+            onTap: () {
+              setState(() => _selectedHazard = h);
+              _mapController.move(LatLng(h.latitude, h.longitude), 15);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                    child: Icon(Icons.warning_amber_rounded, color: color, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(h.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(h.barangayName, style: GoogleFonts.outfit(color: Colors.grey.shade600, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(h.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(h.barangayName, style: GoogleFonts.outfit(color: Colors.grey.shade600, fontSize: 12)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                        child: Text(h.severity.toUpperCase(), style: GoogleFonts.outfit(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(_timeAgo(h.createdAt), style: GoogleFonts.outfit(color: Colors.grey, fontSize: 11)),
                     ],
                   ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-                      child: Text(h.severity.toUpperCase(), style: GoogleFonts.outfit(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(_timeAgo(h.createdAt), style: GoogleFonts.outfit(color: Colors.grey, fontSize: 11)),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
