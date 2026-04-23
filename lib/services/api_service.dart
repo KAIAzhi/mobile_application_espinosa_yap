@@ -3,15 +3,17 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
-import '../models/users.dart';
 import '../models/hazard_report.dart';
 import '../models/hazard_type.dart';
+import '../models/users.dart';
 
 class ApiService {
-  /// Hostinger redirects HTTP → HTTPS (301). POST must use HTTPS or the client gets 301 with no JSON body.
-  static const String baseUrl = 'https://webhoster3b.com/rescuehub/apis/users.php';
-  static const String reportsUrl = 'https://webhoster3b.com/rescuehub/apis/reports.php';
+  static const String baseUrl =
+      'https://webhoster3b.com/rescuehub/apis/users.php';
+  static const String reportsUrl =
+      'https://webhoster3b.com/rescuehub/apis/reports.php';
 
+  // ─── USERS ───────────────────────────────────────────────
 
   static Future<List<Users>> fetchUsers() async {
     final response = await http.get(Uri.parse('$baseUrl?action=list'));
@@ -27,15 +29,15 @@ class ApiService {
       throw Exception('Invalid response from server.');
     }
     if (decoded == null || decoded['status'] != 'success') {
-      final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
+      final message = decoded != null
+          ? decoded['message'] ?? 'Unknown error'
+          : 'Empty response';
       throw Exception('API error: $message');
     }
 
     final List<dynamic> usersJson = decoded['data'] ?? [];
     return usersJson.map((e) {
-      if (e is! Map) {
-        throw Exception('Invalid user row from server.');
-      }
+      if (e is! Map) throw Exception('Invalid user row from server.');
       return Users.fromJson(Map<String, dynamic>.from(e));
     }).toList();
   }
@@ -49,11 +51,7 @@ class ApiService {
     try {
       response = await http.post(
         Uri.parse(baseUrl),
-        // Your PHP login logic uses $_POST (like the example you shared).
-        // Sending form-encoded data ensures $_REQUEST['action'] and $_POST fields are populated.
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: {'Accept': 'application/json'},
         body: {
           'action': 'login',
           'identifier': identifier.trim(),
@@ -61,9 +59,7 @@ class ApiService {
         },
       );
     } on SocketException {
-      throw Exception(
-        'No internet connection. Check your network and try again.',
-      );
+      throw Exception('No internet connection. Check your network and try again.');
     } on http.ClientException {
       throw Exception('Could not reach the server. Try again later.');
     }
@@ -78,8 +74,7 @@ class ApiService {
     if (response.statusCode != 200) {
       var message = 'Login failed (HTTP ${response.statusCode})';
       if (decoded is Map) {
-        final m = Map<String, dynamic>.from(decoded);
-        message = m['message']?.toString() ?? message;
+        message = Map<String, dynamic>.from(decoded)['message']?.toString() ?? message;
       }
       throw Exception(message);
     }
@@ -92,18 +87,20 @@ class ApiService {
     }
 
     final userJson = decoded['data'];
-    // Login must return a single user object, not a list (list was wrongly used when PHP ignored JSON action).
     if (userJson is Map) {
       return Users.fromJson(Map<String, dynamic>.from(userJson));
     }
     throw Exception('Invalid user data from server.');
   }
 
-  //start1 reports
+  // ─── REPORTS ─────────────────────────────────────────────
+
+  // Fetch reports by logged-in user
   static Future<List<HazardReport>> fetchHazardReports(int userId) async {
     late final http.Response response;
     try {
-      response = await http.get(Uri.parse('$reportsUrl?action=list&user_id=$userId'));
+      response = await http.get(
+          Uri.parse('$reportsUrl?action=list&user_id=$userId'));
     } on SocketException {
       throw Exception('No internet connection.');
     } on http.ClientException {
@@ -118,19 +115,24 @@ class ApiService {
     }
 
     if (decoded == null || decoded['status'] != 'success') {
-      final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
+      final message = decoded != null
+          ? decoded['message'] ?? 'Unknown error'
+          : 'Empty response';
       throw Exception('API error: $message');
     }
 
-    final List<dynamic> reportsJson = decoded['data'] ?? [];
-    return reportsJson.map((e) => HazardReport.fromJson(Map<String, dynamic>.from(e))).toList();
+    final List<dynamic> json = decoded['data'] ?? [];
+    return json
+        .map((e) => HazardReport.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
   }
 
-  // Fetch user stats
-  static Future<Map<String, int>> fetchUserStats(int userId) async {
+  // Fetch ALL active hazards (for map)
+  static Future<List<HazardReport>> fetchAllHazards() async {
     late final http.Response response;
     try {
-      response = await http.get(Uri.parse('$reportsUrl?action=stats&user_id=$userId'));
+      response =
+          await http.get(Uri.parse('$reportsUrl?action=list_all'));
     } on SocketException {
       throw Exception('No internet connection.');
     } on http.ClientException {
@@ -145,7 +147,41 @@ class ApiService {
     }
 
     if (decoded == null || decoded['status'] != 'success') {
-      final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
+      final message = decoded != null
+          ? decoded['message'] ?? 'Unknown error'
+          : 'Empty response';
+      throw Exception('API error: $message');
+    }
+
+    final List<dynamic> json = decoded['data'] ?? [];
+    return json
+        .map((e) => HazardReport.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  // Fetch user stats for profile
+  static Future<Map<String, int>> fetchUserStats(int userId) async {
+    late final http.Response response;
+    try {
+      response = await http.get(
+          Uri.parse('$reportsUrl?action=stats&user_id=$userId'));
+    } on SocketException {
+      throw Exception('No internet connection.');
+    } on http.ClientException {
+      throw Exception('Could not reach the server.');
+    }
+
+    final dynamic decoded;
+    try {
+      decoded = jsonDecode(response.body);
+    } on FormatException {
+      throw Exception('Invalid response from server.');
+    }
+
+    if (decoded == null || decoded['status'] != 'success') {
+      final message = decoded != null
+          ? decoded['message'] ?? 'Unknown error'
+          : 'Empty response';
       throw Exception('API error: $message');
     }
 
@@ -160,7 +196,8 @@ class ApiService {
   static Future<List<HazardType>> fetchHazardTypes() async {
     late final http.Response response;
     try {
-      response = await http.get(Uri.parse('$reportsUrl?action=list_hazardtype'));
+      response = await http.get(
+          Uri.parse('$reportsUrl?action=list_hazardtype'));
     } on SocketException {
       throw Exception('No internet connection.');
     } on http.ClientException {
@@ -180,7 +217,7 @@ class ApiService {
         .toList();
   }
 
-  // Submit report with image
+  // Submit report with optional image
   static Future<void> submitReport({
     required int userId,
     required int barangayId,
@@ -193,7 +230,8 @@ class ApiService {
     required String severity,
     File? imageFile,
   }) async {
-    final request = http.MultipartRequest('POST', Uri.parse(reportsUrl));
+    final request =
+        http.MultipartRequest('POST', Uri.parse(reportsUrl));
     request.fields.addAll({
       'action': 'submit',
       'user_id': userId.toString(),
@@ -208,7 +246,8 @@ class ApiService {
     });
 
     if (imageFile != null) {
-      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+      request.files.add(
+          await http.MultipartFile.fromPath('image', imageFile.path));
     }
 
     late final http.StreamedResponse streamed;
@@ -229,34 +268,10 @@ class ApiService {
     }
 
     if (decoded == null || decoded['status'] != 'success') {
-      final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
+      final message = decoded != null
+          ? decoded['message'] ?? 'Unknown error'
+          : 'Empty response';
       throw Exception('API error: $message');
     }
-  }
-
-  static Future<List<HazardReport>> fetchAllHazards() async {
-    late final http.Response response;
-    try {
-      response = await http.get(Uri.parse('$reportsUrl?action=list_all'));
-    } on SocketException {
-      throw Exception('No internet connection.');
-    } on http.ClientException {
-      throw Exception('Could not reach the server.');
-    }
-
-    final dynamic decoded;
-    try {
-      decoded = jsonDecode(response.body);
-    } on FormatException {
-      throw Exception('Invalid response from server.');
-    }
-
-    if (decoded == null || decoded['status'] != 'success') {
-      final message = decoded != null ? decoded['message'] ?? 'Unknown error' : 'Empty response';
-      throw Exception('API error: $message');
-    }
-
-    final List<dynamic> json = decoded['data'] ?? [];
-    return json.map((e) => HazardReport.fromJson(Map<String, dynamic>.from(e))).toList();
   }
 }
